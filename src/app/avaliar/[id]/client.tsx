@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ArrowLeft, Star, Send, User, Calendar, Wrench } from "lucide-react";
 import Link from "next/link";
 
@@ -70,7 +70,7 @@ export default function AvaliarClient({ id }: { id: string }) {
   };
 
   const renderStars = () => {
-    const stars = [] as JSX.Element[];
+    const stars: ReactNode[] = [];
     const displayRating = hoveredRating || rating;
     for (let i = 1; i <= 5; i++) {
       stars.push(
