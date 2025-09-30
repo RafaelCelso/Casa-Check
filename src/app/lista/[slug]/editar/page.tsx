@@ -378,6 +378,11 @@ export default function EditarListaPage() {
 
     try {
       const listId = extractIdFromSlug(String(slug));
+      if (!listId) {
+        setError("Lista não encontrada");
+        setIsSaving(false);
+        return;
+      }
       await taskListsService.updateTaskList(listId, {
         name: nomeLista.trim(),
         description: descricao.trim() || null,
