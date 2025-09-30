@@ -893,6 +893,7 @@ export default function NotificacoesPage() {
                   isOpen: false,
                   type: null,
                   invitation: null,
+                  notification: null,
                 })
               }
             >
