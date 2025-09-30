@@ -376,6 +376,13 @@ export default function EditarListaPage() {
 
     try {
       const listId = extractIdFromSlug(String(slug));
+
+      if (!listId) {
+        setError("ID da lista inválido");
+        setIsSaving(false);
+        return;
+      }
+
       await taskListsService.updateTaskList(listId, {
         name: nomeLista.trim(),
         description: descricao.trim() || null,
