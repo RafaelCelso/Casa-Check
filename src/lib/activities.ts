@@ -56,15 +56,16 @@ export const activitiesService = {
         .from("tasks")
         .select(
           `
-          id,
-          title,
-          completed_at,
-          task_lists!inner (
-            id,
-            name,
-            creator_id
-          )
-        `
+           id,
+           title,
+           completed_at,
+           completed_by,
+           task_lists!inner (
+             id,
+             name,
+             creator_id
+           )
+         `
         )
         .eq("status", "concluida")
         .not("completed_at", "is", null)
@@ -72,7 +73,7 @@ export const activitiesService = {
         .limit(limit);
 
       if (!tasksError && completedTasks) {
-        completedTasks.forEach((task) => {
+        completedTasks.forEach((task: any) => {
           // Verificar se o usuário é criador da lista ou foi quem completou a tarefa
           if (
             task.task_lists?.creator_id === userId ||
@@ -100,24 +101,24 @@ export const activitiesService = {
         .from("ratings")
         .select(
           `
-          id,
-          rating,
-          created_at,
-          rated_user:rated_user_id (
-            name,
-            email
-          ),
-          task_lists!inner (
-            name
-          )
-        `
+           id,
+           rating,
+           created_at,
+           rated_user:rated_user_id (
+             name,
+             email
+           ),
+           task_lists!inner (
+             name
+           )
+         `
         )
         .eq("rater_id", userId)
         .order("created_at", { ascending: false })
         .limit(limit);
 
       if (!ratingsError && recentRatings) {
-        recentRatings.forEach((rating) => {
+        recentRatings.forEach((rating: any) => {
           const userName =
             rating.rated_user?.name || rating.rated_user?.email || "Usuário";
           activities.push({
@@ -144,23 +145,23 @@ export const activitiesService = {
         .from("task_comments")
         .select(
           `
-          id,
-          content,
-          created_at,
-          tasks!inner (
-            title,
-            task_lists!inner (
-              name
-            )
-          )
-        `
+           id,
+           content,
+           created_at,
+           tasks!inner (
+             title,
+             task_lists!inner (
+               name
+             )
+           )
+         `
         )
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(limit);
 
       if (!commentsError && recentComments) {
-        recentComments.forEach((comment) => {
+        recentComments.forEach((comment: any) => {
           activities.push({
             id: `comment_${comment.id}`,
             type: "comment_added",
@@ -186,17 +187,17 @@ export const activitiesService = {
           .from("list_invitations")
           .select(
             `
-          id,
-          created_at,
-          updated_at,
-          list:list_id (
-            name
-          ),
-          inviter:inviter_id (
-            name,
-            email
-          )
-        `
+           id,
+           created_at,
+           updated_at,
+           list:list_id (
+             name
+           ),
+           inviter:inviter_id (
+             name,
+             email
+           )
+         `
           )
           .eq("invitee_id", userId)
           .eq("status", "accepted")
@@ -204,7 +205,7 @@ export const activitiesService = {
           .limit(limit);
 
       if (!invitationsError && acceptedInvitations) {
-        acceptedInvitations.forEach((invitation) => {
+        acceptedInvitations.forEach((invitation: any) => {
           const inviterName =
             invitation.inviter?.name || invitation.inviter?.email || "Usuário";
           activities.push({
