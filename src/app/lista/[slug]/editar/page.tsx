@@ -114,6 +114,10 @@ export default function EditarListaPage() {
       try {
         // Carregar lista
         const listId = extractIdFromSlug(String(slug));
+        if (!listId) {
+          setError("Lista não encontrada");
+          return;
+        }
         const listaCarregada = await taskListsService.getTaskListById(
           listId,
           user.id
