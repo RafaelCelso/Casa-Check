@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   ArrowLeft,
   Search,
@@ -50,7 +50,7 @@ interface Prestador {
   foto: string;
 }
 
-export default function ConvidarPrestadorPage() {
+function ConvidarPrestadorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -826,5 +826,19 @@ export default function ConvidarPrestadorPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function ConvidarPrestadorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-gray-600">
+          Carregando...
+        </div>
+      }
+    >
+      <ConvidarPrestadorContent />
+    </Suspense>
   );
 }
