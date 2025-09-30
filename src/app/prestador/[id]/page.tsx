@@ -119,14 +119,14 @@ export default function PrestadorPage() {
         cor: "blue", // Cor padrão
         progresso: lista.tasks
           ? Math.round(
-              (lista.tasks.filter((t) => t.status === "completed").length /
+              (lista.tasks.filter((t) => t.status === "concluida").length /
                 lista.tasks.length) *
                 100
             )
           : 0,
         totalTarefas: lista.tasks?.length || 0,
         tarefasConcluidas:
-          lista.tasks?.filter((t) => t.status === "completed").length || 0,
+          lista.tasks?.filter((t) => t.status === "concluida").length || 0,
       }));
 
       setListas(listasMapeadas);
