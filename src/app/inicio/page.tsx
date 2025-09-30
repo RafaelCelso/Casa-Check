@@ -27,10 +27,12 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/supabase-auth-provider";
 import { useTaskLists } from "@/hooks/use-task-lists";
 import { useActivities } from "@/hooks/use-activities";
+import { useLastProviders } from "@/hooks/use-last-providers";
 import { useModal } from "@/contexts/modal-context";
 import { supabase } from "@/lib/supabase";
 import { TaskListCard } from "@/components/task/task-list-card";
 import { generateUniqueSlug } from "@/lib/slug";
+import { lastProvidersService } from "@/lib/last-providers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { ListInvitation } from "@/types";
@@ -96,6 +98,12 @@ export default function InicioPage() {
     error: activitiesError,
     refetch: refetchActivities,
   } = useActivities(user?.id);
+  const {
+    providers,
+    loading: providersLoading,
+    error: providersError,
+    refetch: refetchProviders,
+  } = useLastProviders(user?.id);
 
   // Categorias disponíveis
   const categorias = [
@@ -320,6 +328,7 @@ export default function InicioPage() {
         if (confirmationModal.type === "accept") {
           refetch();
           refetchActivities(); // Recarregar atividades também
+          refetchProviders(); // Recarregar prestadores também
         }
       }
     } catch (error) {
@@ -405,6 +414,7 @@ export default function InicioPage() {
       // Recarregar as listas e atividades
       refetch();
       refetchActivities();
+      refetchProviders();
     } catch (error) {
       console.error("Erro ao sair da lista:", error);
       throw error;
@@ -869,66 +879,113 @@ export default function InicioPage() {
           )}
         </div>
 
-        {/* Últimos Prestadores */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <Users className="w-5 h-5 mr-2 text-green-500" />
-            Últimos Prestadores
-          </h2>
-          <div className="flex space-x-4 overflow-x-auto pb-4">
-            {/* Prestador 1 */}
-            <Link href="/prestador/1" className="flex-shrink-0">
-              <div className="text-center group cursor-pointer">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-orange-200 to-orange-300 flex items-center justify-center mb-2 mx-auto group-hover:scale-105 transition-transform shadow-lg">
-                  <span className="text-lg font-medium text-orange-700">
-                    SA
-                  </span>
-                </div>
-                <p className="text-sm font-medium text-gray-800">
-                  Sofia Almeida
-                </p>
-                <div className="flex items-center justify-center space-x-1 mt-1">
-                  <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-600">4.9</span>
-                </div>
-              </div>
-            </Link>
+        {/* Últimos Prestadores - Apenas para contratantes */}
+        {!isLoadingUserType && userType === "contratante" && (
+          <div>
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <Users className="w-5 h-5 mr-2 text-green-500" />
+              Últimos Prestadores
+            </h2>
 
-            {/* Prestador 2 */}
-            <Link href="/prestador/2" className="flex-shrink-0">
-              <div className="text-center group cursor-pointer">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-200 to-blue-300 flex items-center justify-center mb-2 mx-auto group-hover:scale-105 transition-transform shadow-lg">
-                  <span className="text-lg font-medium text-blue-700">RF</span>
-                </div>
-                <p className="text-sm font-medium text-gray-800">
-                  Ricardo Fernandes
-                </p>
-                <div className="flex items-center justify-center space-x-1 mt-1">
-                  <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-600">4.7</span>
-                </div>
+            {providersLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-green-500" />
+                <span className="ml-2 text-gray-600">
+                  Carregando prestadores...
+                </span>
               </div>
-            </Link>
+            ) : providersError ? (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600 text-sm">{providersError}</p>
+              </div>
+            ) : providers.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-600 mb-2">
+                  Nenhum prestador ainda
+                </h3>
+                <p className="text-gray-500">
+                  Os prestadores que colaborarem em suas listas aparecerão aqui
+                </p>
+              </div>
+            ) : (
+              <div className="flex space-x-4 overflow-x-auto pb-4">
+                {providers.map((provider) => {
+                  const colors = [
+                    "from-orange-200 to-orange-300",
+                    "from-blue-200 to-blue-300",
+                    "from-purple-200 to-purple-300",
+                    "from-green-200 to-green-300",
+                    "from-pink-200 to-pink-300",
+                    "from-indigo-200 to-indigo-300",
+                  ];
+                  const textColors = [
+                    "text-orange-700",
+                    "text-blue-700",
+                    "text-purple-700",
+                    "text-green-700",
+                    "text-pink-700",
+                    "text-indigo-700",
+                  ];
 
-            {/* Prestador 3 */}
-            <Link href="/prestador/3" className="flex-shrink-0">
-              <div className="text-center group cursor-pointer">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-200 to-purple-300 flex items-center justify-center mb-2 mx-auto group-hover:scale-105 transition-transform shadow-lg">
-                  <span className="text-lg font-medium text-purple-700">
-                    BC
-                  </span>
-                </div>
-                <p className="text-sm font-medium text-gray-800">
-                  Beatriz Costa
-                </p>
-                <div className="flex items-center justify-center space-x-1 mt-1">
-                  <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-600">4.8</span>
-                </div>
+                  const colorIndex =
+                    providers.indexOf(provider) % colors.length;
+                  const bgColor = colors[colorIndex];
+                  const textColor = textColors[colorIndex];
+
+                  return (
+                    <Link
+                      key={provider.id}
+                      href={`/prestador/${provider.id}`}
+                      className="flex-shrink-0"
+                    >
+                      <div className="text-center group cursor-pointer">
+                        <div
+                          className={`w-20 h-20 rounded-full bg-gradient-to-r ${bgColor} flex items-center justify-center mb-2 mx-auto group-hover:scale-105 transition-transform shadow-lg`}
+                        >
+                          {provider.avatar_url ? (
+                            <img
+                              src={provider.avatar_url}
+                              alt={provider.name}
+                              className="w-20 h-20 rounded-full object-cover"
+                            />
+                          ) : (
+                            <span
+                              className={`text-lg font-medium ${textColor}`}
+                            >
+                              {provider.initials}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-gray-800 truncate max-w-[80px]">
+                          {provider.name}
+                        </p>
+                        <div className="flex items-center justify-center space-x-1 mt-1">
+                          <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                          <span className="text-xs text-gray-600">
+                            {provider.rating.toFixed(1)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {lastProvidersService.formatLastCollaboration(
+                            provider.last_collaboration
+                          )}
+                        </p>
+                        {provider.list_count > 1 && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            {provider.list_count} listas
+                          </p>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-            </Link>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Padding bottom para compensar a navegação fixa */}
