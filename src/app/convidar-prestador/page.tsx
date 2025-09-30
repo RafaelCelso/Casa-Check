@@ -26,6 +26,7 @@ import { taskListsService } from "@/lib/task-lists";
 import { serviceProvidersService } from "@/lib/service-providers";
 import { useAuth } from "@/components/auth/supabase-auth-provider";
 import { getCategoryIcon } from "@/lib/category-icons";
+import type { TaskCategory } from "@/types";
 import { generateSlug } from "@/lib/slug";
 
 interface Lista {
@@ -36,7 +37,7 @@ interface Lista {
   progresso: number;
   totalTarefas: number;
   tarefasConcluidas: number;
-  categoria: string;
+  categoria: TaskCategory;
 }
 
 interface Prestador {
@@ -144,7 +145,7 @@ export default function ConvidarPrestadorPage() {
           tarefasConcluidas:
             taskList.tasks?.filter((task) => task.status === "concluida")
               .length || 0,
-          categoria: taskList.category || "limpeza-geral",
+          categoria: (taskList.category as TaskCategory) || "limpeza-geral",
         }));
 
         setListas(listasFormatadas);
