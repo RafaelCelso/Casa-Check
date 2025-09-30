@@ -8,6 +8,7 @@ import Image from "next/image";
 import { serviceProvidersService } from "@/lib/service-providers";
 import { generateSlug } from "@/lib/slug";
 import { useAuth } from "@/components/auth/supabase-auth-provider";
+import { CategoryTags } from "@/components/ui/category-tags";
 
 interface Prestador {
   id: string;
@@ -17,6 +18,7 @@ interface Prestador {
   avaliacao: number;
   totalAvaliacoes: number;
   foto: string;
+  service_types: string[];
 }
 
 export default function BuscarPage() {
@@ -51,6 +53,11 @@ export default function BuscarPage() {
             avaliacao: provider.rating || 0,
             totalAvaliacoes: 0, // Campo não existe no banco ainda
             foto: provider.avatar_url || "/api/placeholder/60/60",
+            service_types: Array.isArray(provider.service_types)
+              ? provider.service_types
+              : provider.service_types
+              ? [provider.service_types]
+              : [],
           })
         );
 
@@ -224,9 +231,15 @@ export default function BuscarPage() {
                         <h3 className="font-semibold text-gray-800 text-lg">
                           {prestador.nome}
                         </h3>
-                        <p className="text-gray-500 text-sm mb-2">
-                          {prestador.servicos}
-                        </p>
+
+                        {/* Categorias como tags */}
+                        <div className="mb-2">
+                          <CategoryTags
+                            categories={prestador.service_types}
+                            maxVisible={3}
+                            className="mb-1"
+                          />
+                        </div>
 
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <div className="flex items-center space-x-1">

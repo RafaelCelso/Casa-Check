@@ -20,6 +20,7 @@ import { serviceProvidersService } from "@/lib/service-providers";
 import { taskListsService } from "@/lib/task-lists";
 import { useAuth } from "@/components/auth/supabase-auth-provider";
 import { invitationsService } from "@/lib/invitations";
+import { CategoryTags } from "@/components/ui/category-tags";
 
 interface Avaliacao {
   id: string;
@@ -43,6 +44,7 @@ interface Prestador {
   localizacao: string;
   tiposServico: string;
   foto: string;
+  service_types: string[];
   avaliacoes: Avaliacao[];
   distribuicaoAvaliacoes: {
     "5": number;
@@ -271,6 +273,11 @@ export default function PrestadorPage() {
           localizacao: provider.location || "",
           tiposServico: servicos,
           foto: provider.avatar_url || "/api/placeholder/96/96",
+          service_types: Array.isArray(provider.service_types)
+            ? provider.service_types
+            : provider.service_types
+            ? [provider.service_types]
+            : [],
           distribuicaoAvaliacoes: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
           avaliacoes: [],
         };
@@ -372,9 +379,6 @@ export default function PrestadorPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-1">
             {prestador.nome}
           </h2>
-
-          {/* Service Type */}
-          <p className="text-gray-500 mb-6">{prestador.servicos}</p>
         </div>
 
         {/* Informações */}
@@ -406,9 +410,13 @@ export default function PrestadorPage() {
                 <Wrench className="w-5 h-5 text-gray-500" />
                 <span className="text-gray-600">Serviços</span>
               </div>
-              <span className="text-gray-800 font-medium">
-                {prestador.tiposServico}
-              </span>
+              <div className="max-w-[65%]">
+                <CategoryTags
+                  categories={prestador.service_types}
+                  maxVisible={4}
+                  className="justify-end"
+                />
+              </div>
             </div>
           </div>
         </div>

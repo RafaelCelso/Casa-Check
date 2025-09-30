@@ -9,6 +9,15 @@ import {
   X,
   Upload,
   Star,
+  Plus,
+  Home,
+  ChefHat,
+  Bath,
+  Bed,
+  TreePine,
+  Archive,
+  Wrench,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -47,6 +56,45 @@ export default function PerfilPage() {
     rating: 0,
     service_types: [] as string[],
   });
+
+  // Categorias disponíveis para prestadores
+  const categoriasDisponiveis = [
+    {
+      id: "limpeza-geral",
+      nome: "Limpeza Geral",
+      icone: Home,
+    },
+    {
+      id: "cozinha",
+      nome: "Cozinha",
+      icone: ChefHat,
+    },
+    {
+      id: "banheiro",
+      nome: "Banheiro",
+      icone: Bath,
+    },
+    {
+      id: "quartos",
+      nome: "Quartos",
+      icone: Bed,
+    },
+    {
+      id: "area-externa",
+      nome: "Área Externa",
+      icone: TreePine,
+    },
+    {
+      id: "organizacao",
+      nome: "Organização",
+      icone: Archive,
+    },
+    {
+      id: "manutencao",
+      nome: "Manutenção",
+      icone: Wrench,
+    },
+  ];
 
   // Carregar dados do usuário logado
   useEffect(() => {
@@ -167,6 +215,7 @@ export default function PerfilPage() {
           phone: formData.telefone,
           location: formData.localidade,
           avatar_url: formData.avatar_url,
+          service_types: formData.service_types,
         })
         .eq("id", user.id);
 
@@ -184,6 +233,16 @@ export default function PerfilPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Função para adicionar/remover categoria
+  const toggleCategoria = (categoriaId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      service_types: prev.service_types.includes(categoriaId)
+        ? prev.service_types.filter((id) => id !== categoriaId)
+        : [...prev.service_types, categoriaId],
+    }));
   };
 
   const handleSignOut = async () => {
@@ -233,7 +292,11 @@ export default function PerfilPage() {
         </DialogContent>
       </Dialog>
       {/* Header */}
-      <div className={`${isModalOpen ? "" : "sticky top-0"} z-50 bg-white px-4 py-4 flex items-center justify-between shadow-sm`}>
+      <div
+        className={`${
+          isModalOpen ? "" : "sticky top-0"
+        } z-50 bg-white px-4 py-4 flex items-center justify-between shadow-sm`}
+      >
         <div className="flex items-center">
           <Link href="/inicio" className="mr-4">
             <ArrowLeft className="w-6 h-6 text-gray-600" />
@@ -385,6 +448,78 @@ export default function PerfilPage() {
             />
           </div>
         </div>
+
+        {/* Categorias de Serviços - Apenas para prestadores */}
+        {formData.tipo === "prestador" && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-sm font-medium text-gray-700">
+                Categorias de Serviços
+              </label>
+              {isEditing && (
+                <span className="text-xs text-gray-500">
+                  {formData.service_types.length} selecionada(s)
+                </span>
+              )}
+            </div>
+
+            {isEditing ? (
+              <div className="grid grid-cols-2 gap-3">
+                {categoriasDisponiveis.map((categoria) => {
+                  const IconeComponent = categoria.icone;
+                  const isSelected = formData.service_types.includes(
+                    categoria.id
+                  );
+
+                  return (
+                    <button
+                      key={categoria.id}
+                      onClick={() => toggleCategoria(categoria.id)}
+                      className={`p-3 rounded-xl border-2 flex items-center space-x-2 transition-all ${
+                        isSelected
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-gray-200 bg-white text-gray-600 hover:border-green-300"
+                      }`}
+                    >
+                      <IconeComponent className="w-4 h-4" />
+                      <span className="text-sm font-medium">
+                        {categoria.nome}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {formData.service_types.length > 0 ? (
+                  formData.service_types.map((categoriaId) => {
+                    const categoria = categoriasDisponiveis.find(
+                      (c) => c.id === categoriaId
+                    );
+                    if (!categoria) return null;
+
+                    const IconeComponent = categoria.icone;
+                    return (
+                      <div
+                        key={categoriaId}
+                        className="inline-flex items-center space-x-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-green-700"
+                      >
+                        <IconeComponent className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          {categoria.nome}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-sm text-gray-500 italic">
+                    Nenhuma categoria selecionada
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Action Links */}
         <div className="mb-8">
