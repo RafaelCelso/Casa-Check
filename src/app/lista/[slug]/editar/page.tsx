@@ -114,13 +114,10 @@ export default function EditarListaPage() {
       try {
         // Carregar lista
         const listId = extractIdFromSlug(String(slug));
-
-        if (!listId) {
-          setError("ID da lista inválido");
-          return;
-        }
-
-        const listaCarregada = await taskListsService.getTaskListById(listId);
+        const listaCarregada = await taskListsService.getTaskListById(
+          listId,
+          user.id
+        );
 
         if (!listaCarregada) {
           setError("Lista não encontrada");
@@ -238,7 +235,6 @@ export default function EditarListaPage() {
               phone: userData?.phone,
               avatar_url: userData?.avatar_url,
               created_at: colaborador.created_at,
-              updated_at: colaborador.updated_at || colaborador.created_at,
               status: "active" as const,
             };
           })
@@ -258,7 +254,6 @@ export default function EditarListaPage() {
               phone: userData?.phone,
               avatar_url: userData?.avatar_url,
               created_at: convite.created_at,
-              updated_at: convite.updated_at || convite.created_at,
               status: "pending" as const,
             };
           })
@@ -289,21 +284,15 @@ export default function EditarListaPage() {
       const { supabase } = await import("@/lib/supabase");
 
       // Usar o ID completo da lista que já foi carregado
-      const listId = extractIdFromSlug(String(slug));
-
-      if (!listId) {
-        setError("ID da lista inválido");
-        setIsRemoving(false);
-        return;
-      }
-
-      const currentLista = await taskListsService.getTaskListById(listId);
+      const currentLista = await taskListsService.getTaskListById(
+        extractIdFromSlug(String(slug))
+      );
       if (!currentLista) {
         setError("Lista não encontrada");
-        setIsRemoving(false);
         return;
       }
 
+      const listId = currentLista.id;
       const colaboradorId = colaboradorToRemove.id;
 
       console.log("Removendo colaborador:", {
@@ -376,18 +365,11 @@ export default function EditarListaPage() {
 
     try {
       const listId = extractIdFromSlug(String(slug));
-
-      if (!listId) {
-        setError("ID da lista inválido");
-        setIsSaving(false);
-        return;
-      }
-
       await taskListsService.updateTaskList(listId, {
         name: nomeLista.trim(),
-        description: descricao.trim() || undefined,
+        description: descricao.trim() || null,
         category: categoria,
-        service_provider_id: prestadorId || undefined,
+        service_provider_id: prestadorId,
       });
 
       // Mostrar modal de sucesso

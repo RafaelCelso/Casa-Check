@@ -258,7 +258,7 @@ export default function DetalhesListaPage() {
         return;
       }
 
-      const list = await taskListsService.getTaskListById(listId);
+      const list = await taskListsService.getTaskListById(listId, user?.id);
       if (!list) {
         setTitulo("Lista não encontrada");
         setTarefasState([]);

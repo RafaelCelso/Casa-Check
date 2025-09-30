@@ -95,167 +95,284 @@ export const taskListsService = {
   },
 
   // Buscar uma lista específica com suas tarefas
-  async getTaskListById(listId: string): Promise<TaskList | null> {
+  // Se o usuário não for o criador e for colaborador, faz fallback via RPC e busca de tarefas direta
+  async getTaskListById(
+    listId: string,
+    currentUserId?: string
+  ): Promise<TaskList | null> {
     console.log("Buscando lista com ID:", listId, "Tamanho:", listId.length);
 
     try {
-      // Primeiro, tentar busca direta (funciona para criadores)
-      console.log("Tentando busca direta primeiro");
-      const { data: directResult, error: directError } = await supabase
-        .from("task_lists")
-        .select(
-          `
-          *,
-          tasks (
-            id,
-            title,
-            description,
-            status,
-            priority,
-            category,
-            assigned_to,
-            completed_at,
-            completed_by,
-            order_index,
-            images,
-            created_at,
-            updated_at
-          ),
-          service_provider:service_provider_id (
-            id,
-            name,
-            email,
-            phone,
-            tipo
-          )
-        `
-        )
-        .eq("id", listId)
-        .single();
-
-      if (!directError && directResult) {
-        console.log("Lista encontrada com busca direta:", directResult);
-        return directResult;
-      }
-
-      // Se não encontrou com busca direta, pode ser colaborador
-      console.log("Busca direta falhou, tentando como colaborador");
-
-      // Buscar IDs das listas onde o usuário é colaborador
-      const { data: collaboratorData, error: collaboratorQueryError } =
-        await supabase
-          .from("list_collaborators")
-          .select("list_id")
-          .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
-
-      if (
-        collaboratorQueryError ||
-        !collaboratorData ||
-        collaboratorData.length === 0
-      ) {
-        console.log("Usuário não é colaborador de nenhuma lista");
-        return null;
-      }
-
-      const collaboratorListIds = collaboratorData.map((c) => c.list_id);
-
-      // Se ID é parcial, buscar todas as listas de colaboração e filtrar
       if (listId.length < 36) {
-        console.log("ID parcial - buscando listas de colaboração");
-        const { data: collabLists, error: collaboratorError } =
-          await supabase.rpc("get_collaborator_lists", {
-            collaborator_user_id: (await supabase.auth.getUser()).data.user?.id,
-            list_ids: collaboratorListIds,
-          });
-
-        if (collaboratorError) {
-          console.error(
-            "Erro ao buscar listas de colaboração:",
-            collaboratorError
+        // ID parcial - tentar buscar todas as listas visíveis e filtrar no JS
+        console.log("Usando busca parcial - buscando todas as listas");
+        const { data: allLists, error: allListsError } = await supabase
+          .from("task_lists")
+          .select(
+            `
+            *,
+            tasks (
+              id,
+              title,
+              description,
+              status,
+              priority,
+              category,
+              assigned_to,
+              completed_at,
+              completed_by,
+              order_index,
+              images,
+              created_at,
+              updated_at
+            ),
+            service_provider:service_provider_id (
+              id,
+              name,
+              email,
+              phone,
+              tipo
+            )
+          `
           );
-          return null;
+
+        // Se não houver erro mas não encontrou (possível colaborador sem acesso a task_lists), fazer fallback
+        if (!allListsError) {
+          const matchingList = allLists?.find((list) =>
+            list.id.startsWith(listId)
+          );
+          if (matchingList) {
+            console.log("Lista encontrada com busca parcial:", matchingList);
+            return matchingList as TaskList;
+          }
         }
 
-        // Filtrar no JavaScript
-        const matchingList = collabLists?.find((list: any) =>
-          list.id.startsWith(listId)
-        );
+        // Fallback colaborador com ID parcial
+        if (currentUserId) {
+          console.warn(
+            "Busca parcial não encontrou lista visível. Tentando fallback por colaboração..."
+          );
 
-        if (!matchingList) {
-          console.log("Nenhuma lista encontrada com ID parcial:", listId);
-          return null;
-        }
+          // Buscar IDs de listas em que o usuário colabora
+          const { data: collabListsIds, error: collabIdsError } = await supabase
+            .from("list_collaborators")
+            .select("list_id")
+            .eq("user_id", currentUserId);
 
-        // Buscar tarefas da lista encontrada
-        const { data: tasksData, error: tasksError } = await supabase
-          .from("tasks")
-          .select("*")
-          .eq("list_id", matchingList.id)
-          .order("order_index");
-
-        if (tasksError) {
-          console.error("Erro ao buscar tarefas:", tasksError);
-          return null;
-        }
-
-        const listWithTasks = {
-          ...matchingList,
-          tasks: tasksData || [],
-        };
-
-        console.log(
-          "Lista encontrada com busca parcial de colaboração:",
-          listWithTasks
-        );
-        return listWithTasks;
-      } else {
-        // ID completo - verificar se está nas listas de colaboração
-        if (collaboratorListIds.includes(listId)) {
-          console.log("ID completo encontrado nas listas de colaboração");
-
-          // Buscar dados da lista usando RPC
-          const { data: collabLists, error: collaboratorError } =
-            await supabase.rpc("get_collaborator_lists", {
-              collaborator_user_id: (
-                await supabase.auth.getUser()
-              ).data.user?.id,
-              list_ids: [listId],
-            });
-
-          if (collaboratorError || !collabLists || collabLists.length === 0) {
+          if (collabIdsError) {
             console.error(
-              "Erro ao buscar lista de colaboração:",
-              collaboratorError
+              "Erro ao buscar listas de colaboração para fallback:",
+              collabIdsError
             );
             return null;
           }
 
-          // Buscar tarefas da lista
-          const { data: tasksData, error: tasksError } = await supabase
-            .from("tasks")
-            .select("*")
-            .eq("list_id", listId)
-            .order("order_index");
+          const possible = (collabListsIds || []).find((row: any) =>
+            String(row.list_id).startsWith(listId)
+          );
 
-          if (tasksError) {
-            console.error("Erro ao buscar tarefas:", tasksError);
+          if (!possible) {
+            console.warn("Nenhuma lista de colaboração bate com o ID parcial");
             return null;
           }
 
-          const listWithTasks = {
-            ...collabLists[0],
-            tasks: tasksData || [],
-          };
+          const fullListId = possible.list_id as string;
 
-          console.log(
-            "Lista encontrada com busca completa de colaboração:",
-            listWithTasks
+          // Buscar base da lista via RPC
+          const { data: rpcLists, error: rpcError } = await supabase.rpc(
+            "get_collaborator_lists",
+            {
+              collaborator_user_id: currentUserId,
+              list_ids: [fullListId],
+            }
           );
+
+          if (rpcError) {
+            console.error("Erro no RPC get_collaborator_lists:", rpcError);
+            return null;
+          }
+
+          const baseList = (rpcLists || []).find(
+            (l: any) => l.id === fullListId
+          );
+          if (!baseList) {
+            console.warn("RPC não retornou a lista requisitada (parcial)");
+            return null;
+          }
+
+          // Buscar tarefas diretamente
+          const { data: tasksData, error: tasksError } = await supabase
+            .from("tasks")
+            .select(
+              `
+              id,
+              title,
+              description,
+              status,
+              priority,
+              category,
+              assigned_to,
+              completed_at,
+              completed_by,
+              order_index,
+              images,
+              created_at,
+              updated_at
+            `
+            )
+            .eq("list_id", fullListId)
+            .order("order_index", { ascending: true });
+
+          if (tasksError) {
+            console.error(
+              "Erro ao buscar tasks da lista via fallback (parcial):",
+              tasksError
+            );
+            return null;
+          }
+
+          const listWithTasks: TaskList = {
+            ...(baseList as TaskList),
+            tasks: (tasksData || []) as unknown as Task[],
+          } as TaskList;
+
           return listWithTasks;
-        } else {
-          console.log("ID completo não encontrado nas listas de colaboração");
-          return null;
         }
+
+        if (allListsError) {
+          console.error("Erro ao buscar todas as listas:", allListsError);
+        }
+        console.log("Nenhuma lista encontrada com ID parcial:", listId);
+        return null;
+      } else {
+        // UUID completo - busca direta
+        console.log("Usando busca exata com eq");
+        const { data, error } = await supabase
+          .from("task_lists")
+          .select(
+            `
+            *,
+            tasks (
+              id,
+              title,
+              description,
+              status,
+              priority,
+              category,
+              assigned_to,
+              completed_at,
+              completed_by,
+              order_index,
+              images,
+              created_at,
+              updated_at
+            ),
+            service_provider:service_provider_id (
+              id,
+              name,
+              email,
+              phone,
+              tipo
+            )
+          `
+          )
+          .eq("id", listId)
+          .single();
+
+        if (!error && data) {
+          console.log("Lista encontrada:", data);
+          return data;
+        }
+
+        // Fallback para colaborador: não conseguiu selecionar task_lists diretamente (RLS do owner)
+        if (currentUserId) {
+          console.warn(
+            "Falha ao buscar lista diretamente. Tentando fallback para colaborador...",
+            { error }
+          );
+
+          // Verificar se o usuário é colaborador da lista
+          const { data: isCollabRows, error: collabCheckError } = await supabase
+            .from("list_collaborators")
+            .select("list_id")
+            .eq("list_id", listId)
+            .eq("user_id", currentUserId);
+
+          if (collabCheckError) {
+            console.error("Erro ao verificar colaboração:", collabCheckError);
+            return null;
+          }
+
+          const isCollaborator = Boolean(
+            isCollabRows && isCollabRows.length > 0
+          );
+          if (!isCollaborator) {
+            console.warn("Usuário não é colaborador desta lista");
+            return null;
+          }
+
+          // Buscar dados básicos da lista via RPC que bypassa RLS
+          const { data: rpcLists, error: rpcError } = await supabase.rpc(
+            "get_collaborator_lists",
+            {
+              collaborator_user_id: currentUserId,
+              list_ids: [listId],
+            }
+          );
+
+          if (rpcError) {
+            console.error("Erro no RPC get_collaborator_lists:", rpcError);
+            return null;
+          }
+
+          const baseList = (rpcLists || []).find((l: any) => l.id === listId);
+          if (!baseList) {
+            console.warn("RPC não retornou a lista requisitada");
+            return null;
+          }
+
+          // Buscar tarefas diretamente (colaborador tem SELECT em tasks por RLS)
+          const { data: tasksData, error: tasksError } = await supabase
+            .from("tasks")
+            .select(
+              `
+              id,
+              title,
+              description,
+              status,
+              priority,
+              category,
+              assigned_to,
+              completed_at,
+              completed_by,
+              order_index,
+              images,
+              created_at,
+              updated_at
+            `
+            )
+            .eq("list_id", listId)
+            .order("order_index", { ascending: true });
+
+          if (tasksError) {
+            console.error(
+              "Erro ao buscar tasks da lista via fallback:",
+              tasksError
+            );
+            return null;
+          }
+
+          const listWithTasks: TaskList = {
+            ...(baseList as TaskList),
+            tasks: (tasksData || []) as unknown as Task[],
+          } as TaskList;
+
+          return listWithTasks;
+        }
+
+        console.error("Erro ao buscar lista:", error);
+        console.error("Detalhes do erro:", JSON.stringify(error, null, 2));
+        return null;
       }
     } catch (error) {
       console.error("Erro inesperado ao buscar lista:", error);

@@ -1,10 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    // Ignora o ESLint durante o build (Vercel/CI), evitando falhas por regras de lint
-    ignoreDuringBuilds: true,
-  },
   images: {
     remotePatterns: [
       {
