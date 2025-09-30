@@ -26,6 +26,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/supabase-auth-provider";
 import { useTaskLists } from "@/hooks/use-task-lists";
+import { useActivities } from "@/hooks/use-activities";
 import { useModal } from "@/contexts/modal-context";
 import { supabase } from "@/lib/supabase";
 import { TaskListCard } from "@/components/task/task-list-card";
@@ -89,6 +90,12 @@ export default function InicioPage() {
     deleteTaskList,
     refetch,
   } = useTaskLists();
+  const {
+    activities,
+    loading: activitiesLoading,
+    error: activitiesError,
+    refetch: refetchActivities,
+  } = useActivities(user?.id);
 
   // Categorias disponíveis
   const categorias = [
@@ -312,6 +319,7 @@ export default function InicioPage() {
         // Se aceito, recarregar listas para mostrar a nova lista
         if (confirmationModal.type === "accept") {
           refetch();
+          refetchActivities(); // Recarregar atividades também
         }
       }
     } catch (error) {
@@ -394,34 +402,36 @@ export default function InicioPage() {
 
       console.log("Usuário removido da lista com sucesso");
 
-      // Recarregar as listas
+      // Recarregar as listas e atividades
       refetch();
+      refetchActivities();
     } catch (error) {
       console.error("Erro ao sair da lista:", error);
       throw error;
     }
   };
 
-  const recentActivity = [
-    {
-      type: "task",
-      message: "Tarefa 'Limpar cozinha' foi concluída",
-      time: "2h atrás",
-      icon: CheckCircle,
-    },
-    {
-      type: "list",
-      message: "Nova lista 'Manutenção' foi criada",
-      time: "1 dia atrás",
-      icon: Star,
-    },
-    {
-      type: "rating",
-      message: "Você avaliou Sofia Almeida com 5 estrelas",
-      time: "2 dias atrás",
-      icon: Star,
-    },
-  ];
+  // Função para obter o ícone baseado no tipo de atividade
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "list_created":
+        return Star;
+      case "task_completed":
+        return CheckCircle;
+      case "task_created":
+        return Clock;
+      case "rating_given":
+        return Star;
+      case "comment_added":
+        return Users;
+      case "list_shared":
+        return Users;
+      case "task_assigned":
+        return User;
+      default:
+        return Clock;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
@@ -808,29 +818,55 @@ export default function InicioPage() {
             <Clock className="w-5 h-5 mr-2 text-green-500" />
             Atividade Recente
           </h2>
-          <div className="space-y-3">
-            {recentActivity.map((activity, index) => {
-              const IconComponent = activity.icon;
-              return (
-                <div
-                  key={index}
-                  className="bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/50"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <IconComponent className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-800">
-                        {activity.message}
-                      </p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
+
+          {activitiesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-green-500" />
+              <span className="ml-2 text-gray-600">
+                Carregando atividades...
+              </span>
+            </div>
+          ) : activitiesError ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600 text-sm">{activitiesError}</p>
+            </div>
+          ) : activities.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-600 mb-2">
+                Nenhuma atividade recente
+              </h3>
+              <p className="text-gray-500">
+                Suas atividades aparecerão aqui conforme você usar o aplicativo
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {activities.map((activity) => {
+                const IconComponent = getActivityIcon(activity.type);
+                return (
+                  <div
+                    key={activity.id}
+                    className="bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/50 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <IconComponent className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-800">
+                          {activity.message}
+                        </p>
+                        <p className="text-xs text-gray-500">{activity.time}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Últimos Prestadores */}
