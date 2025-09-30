@@ -215,7 +215,7 @@ export default function EditarListaPage() {
       // Buscar dados de todos os usuários de uma vez
       const { data: usersData, error: usersError } = await supabase
         .from("user")
-        .select("id, name, email, phone, avatar_url")
+        .select("id, name, email, phone, avatar_url, created_at, updated_at")
         .in("id", todosOsUserIds);
 
       if (usersError) {
@@ -239,6 +239,7 @@ export default function EditarListaPage() {
               phone: userData?.phone,
               avatar_url: userData?.avatar_url,
               created_at: colaborador.created_at,
+              updated_at: userData?.updated_at || colaborador.created_at,
               status: "active" as const,
             };
           })
@@ -258,6 +259,7 @@ export default function EditarListaPage() {
               phone: userData?.phone,
               avatar_url: userData?.avatar_url,
               created_at: convite.created_at,
+              updated_at: userData?.updated_at || convite.created_at,
               status: "pending" as const,
             };
           })
