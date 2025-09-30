@@ -7,6 +7,7 @@ import { taskListsService } from "@/lib/task-lists";
 import { tasksService } from "@/lib/tasks";
 import { useAuth } from "@/components/auth/supabase-auth-provider";
 import { getCategoryIcon } from "@/lib/category-icons";
+import type { TaskCategory } from "@/types";
 
 interface ListaTarefa {
   id: string;
@@ -16,7 +17,7 @@ interface ListaTarefa {
   progresso: number;
   totalTarefas: number;
   tarefasConcluidas: number;
-  categoria?: string;
+  categoria?: TaskCategory;
 }
 
 export default function TarefaRapidaPage() {
@@ -60,7 +61,7 @@ export default function TarefaRapidaPage() {
           tarefasConcluidas:
             taskList.tasks?.filter((task) => task.status === "concluida")
               .length || 0,
-          categoria: taskList.category || "limpeza-geral",
+          categoria: (taskList.category as TaskCategory) || "limpeza-geral",
         }));
 
         setListas(listasFormatadas);
@@ -196,7 +197,8 @@ export default function TarefaRapidaPage() {
               >
                 {(() => {
                   const IconComponent = getCategoryIcon(
-                    listaSelecionada?.categoria || "limpeza-geral"
+                    (listaSelecionada?.categoria as any) ||
+                      ("limpeza-geral" as any)
                   );
                   return (
                     <IconComponent
