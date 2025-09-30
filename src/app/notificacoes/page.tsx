@@ -122,6 +122,7 @@ export default function NotificacoesPage() {
       isOpen: true,
       type: "accept",
       invitation: invitation,
+      notification: null,
     });
   };
 
@@ -130,6 +131,7 @@ export default function NotificacoesPage() {
       isOpen: true,
       type: "decline",
       invitation: invitation,
+      notification: null,
     });
   };
 
