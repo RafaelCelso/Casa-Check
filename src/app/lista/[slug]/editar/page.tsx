@@ -238,6 +238,7 @@ export default function EditarListaPage() {
               phone: userData?.phone,
               avatar_url: userData?.avatar_url,
               created_at: colaborador.created_at,
+              updated_at: colaborador.updated_at || colaborador.created_at,
               status: "active" as const,
             };
           })
@@ -257,6 +258,7 @@ export default function EditarListaPage() {
               phone: userData?.phone,
               avatar_url: userData?.avatar_url,
               created_at: convite.created_at,
+              updated_at: convite.updated_at || convite.created_at,
               status: "pending" as const,
             };
           })
