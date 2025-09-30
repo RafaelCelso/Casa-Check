@@ -89,7 +89,8 @@ export default function ConvidarPrestadorPage() {
         const buscarListaEspecifica = async () => {
           try {
             const listaEspecifica = await taskListsService.getTaskListById(
-              listaIdParam
+              listaIdParam,
+              user.id
             );
             if (listaEspecifica) {
               setListaSelecionada({
@@ -100,7 +101,7 @@ export default function ConvidarPrestadorPage() {
                 progresso: 0,
                 totalTarefas: listaEspecifica.tasks?.length || 0,
                 tarefasConcluidas:
-                  listaEspecifica.tasks?.filter((t) => t.status === "completed")
+                  listaEspecifica.tasks?.filter((t) => t.status === "concluida")
                     .length || 0,
                 categoria: "limpeza-geral",
               });
