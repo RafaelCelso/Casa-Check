@@ -21,8 +21,32 @@ export const metadata: Metadata = {
   description:
     "Aplicativo PWA para coordenação e acompanhamento de tarefas domésticas",
   manifest: "/manifest.json",
-  themeColor: "#ffffff",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  icons: {
+    icon: [
+      { url: "/image/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/image/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/image/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      {
+        url: "/image/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "Casa Check",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#10b981",
 };
 
 export default function RootLayout({
