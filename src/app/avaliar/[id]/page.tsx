@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   Star,
@@ -23,10 +24,14 @@ interface Prestador {
   dataConclusao: string;
 }
 
-export default function AvaliarPage({ params }: { params: { id: string } }) {
+export default function AvaliarPage() {
+  const routeParams = useParams<{ id: string }>();
+  const routeId = Array.isArray(routeParams.id)
+    ? routeParams.id[0]
+    : routeParams.id;
   // Dados mockados do prestador
   const prestador: Prestador = {
-    id: params.id,
+    id: routeId,
     nome: "Mariana Silva",
     servicos: "Serviços Domésticos",
     telefone: "(11) 98765-4321",
@@ -68,7 +73,7 @@ export default function AvaliarPage({ params }: { params: { id: string } }) {
     const avaliacoesSalvas = localStorage.getItem("avaliacoes");
     const avaliacoes = avaliacoesSalvas ? JSON.parse(avaliacoesSalvas) : {};
 
-    avaliacoes[params.id] = {
+    avaliacoes[routeId] = {
       rating: rating,
       comentario: comentario,
       data: new Date().toISOString(),
@@ -79,7 +84,7 @@ export default function AvaliarPage({ params }: { params: { id: string } }) {
     setIsSubmitting(false);
 
     // Redirecionar para página de sucesso
-    window.location.href = `/avaliar/${params.id}/sucesso`;
+    window.location.href = `/avaliar/${routeId}/sucesso`;
   };
 
   const renderStars = () => {
