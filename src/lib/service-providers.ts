@@ -7,7 +7,7 @@ export const serviceProvidersService = {
     const { data, error } = await supabase
       .from("user")
       .select(
-        "id, name, email, phone, tipo, location, service_types, rating, avatar_url"
+        "id, name, email, phone, tipo, location, service_types, rating, avatar_url, created_at, updated_at"
       )
       .eq("tipo", "prestador")
       .order("name");
@@ -17,7 +17,20 @@ export const serviceProvidersService = {
       throw error;
     }
 
-    return data || [];
+    // Garantir shape completo de User
+    return (data || []).map((u: any) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      phone: u.phone,
+      tipo: u.tipo,
+      location: u.location,
+      service_types: u.service_types,
+      rating: u.rating,
+      avatar_url: u.avatar_url,
+      created_at: u.created_at,
+      updated_at: u.updated_at,
+    }));
   },
 
   // Buscar prestador por ID
@@ -32,7 +45,7 @@ export const serviceProvidersService = {
       const { data, error } = await supabase
         .from("user")
         .select(
-          "id, name, email, phone, tipo, location, service_types, rating, avatar_url"
+          "id, name, email, phone, tipo, location, service_types, rating, avatar_url, created_at, updated_at"
         )
         .eq("id", providerId)
         .eq("tipo", "prestador")
@@ -43,7 +56,7 @@ export const serviceProvidersService = {
         return null;
       }
 
-      return data;
+      return data as User;
     }
 
     // Fallback: tentar por nome (slug sem hífens para espaços)
@@ -51,7 +64,7 @@ export const serviceProvidersService = {
     const { data, error } = await supabase
       .from("user")
       .select(
-        "id, name, email, phone, tipo, location, service_types, rating, avatar_url"
+        "id, name, email, phone, tipo, location, service_types, rating, avatar_url, created_at, updated_at"
       )
       .eq("tipo", "prestador")
       .ilike("name", `%${nameGuess}%`)
@@ -62,7 +75,7 @@ export const serviceProvidersService = {
       return null;
     }
 
-    return data ?? null;
+    return (data as User) ?? null;
   },
 
   // Buscar prestadores por tipo de serviço
@@ -70,7 +83,7 @@ export const serviceProvidersService = {
     const { data, error } = await supabase
       .from("user")
       .select(
-        "id, name, email, phone, tipo, location, service_types, rating, avatar_url"
+        "id, name, email, phone, tipo, location, service_types, rating, avatar_url, created_at, updated_at"
       )
       .eq("tipo", "prestador")
       .contains("service_types", [serviceType])
@@ -81,6 +94,18 @@ export const serviceProvidersService = {
       throw error;
     }
 
-    return data || [];
+    return (data || []).map((u: any) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      phone: u.phone,
+      tipo: u.tipo,
+      location: u.location,
+      service_types: u.service_types,
+      rating: u.rating,
+      avatar_url: u.avatar_url,
+      created_at: u.created_at,
+      updated_at: u.updated_at,
+    }));
   },
 };
