@@ -45,7 +45,17 @@ export const commentsService = {
       return null;
     }
 
-    return data as Comment;
+    // Normalizar possível retorno como array em user
+    const normalized: Comment = {
+      id: (data as any).id,
+      content: (data as any).content,
+      created_at: (data as any).created_at,
+      user: Array.isArray((data as any).user)
+        ? (data as any).user[0] ?? null
+        : (data as any).user ?? null,
+    };
+
+    return normalized;
   },
 
   async getCommentsByTaskId(taskId: string): Promise<Comment[]> {
@@ -71,7 +81,15 @@ export const commentsService = {
       return [];
     }
 
-    return data as Comment[];
+    // Normalizar lista para garantir que user não seja array
+    const normalized: Comment[] = (data as any[]).map((row) => ({
+      id: row.id,
+      content: row.content,
+      created_at: row.created_at,
+      user: Array.isArray(row.user) ? row.user[0] ?? null : row.user ?? null,
+    }));
+
+    return normalized;
   },
 
   async updateComment(commentId: string, content: string): Promise<boolean> {
