@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MaskedInput } from "@/components/ui/masked-input";
@@ -19,7 +19,7 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { ErrorModal } from "@/components/ui/error-modal";
 
-export default function CadastroPage() {
+function CadastroContent() {
   const searchParams = useSearchParams();
   const tipoParam = searchParams.get("tipo");
 
@@ -380,5 +380,19 @@ export default function CadastroPage() {
         type={errorModal.title === "Conta criada!" ? "info" : "error"}
       />
     </div>
+  );
+}
+
+export default function CadastroPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-gray-600">
+          Carregando...
+        </div>
+      }
+    >
+      <CadastroContent />
+    </Suspense>
   );
 }
