@@ -385,9 +385,9 @@ export default function EditarListaPage() {
 
       await taskListsService.updateTaskList(listId, {
         name: nomeLista.trim(),
-        description: descricao.trim() || undefined,
+        description: descricao.trim() || null,
         category: categoria,
-        service_provider_id: prestadorId || undefined,
+        service_provider_id: prestadorId,
       });
 
       // Mostrar modal de sucesso

@@ -144,10 +144,9 @@ export default function AjustesPage() {
                   {servico.avaliado ? (
                     // Serviço já avaliado
                     <Link
-                      href={`/prestador/${
-                        servico.prestadorId ??
-                        servico.prestador.toLowerCase().replace(" ", "-")
-                      }?from=services`}
+                      href={`/prestador/${servico.prestador
+                        .toLowerCase()
+                        .replace(" ", "-")}?from=services`}
                       className="block"
                     >
                       <div className="flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors">
