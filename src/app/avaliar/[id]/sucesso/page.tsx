@@ -1,12 +1,13 @@
 "use client";
 import { CheckCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
-export default function AvaliacaoSucessoPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function AvaliacaoSucessoPage() {
+  const routeParams = useParams<{ id: string }>();
+  const routeId = Array.isArray(routeParams.id)
+    ? routeParams.id[0]
+    : routeParams.id;
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -41,7 +42,7 @@ export default function AvaliacaoSucessoPage({
 
         {/* Action Buttons */}
         <div className="w-full max-w-sm space-y-3">
-          <Link href={`/prestador/${params.id}`} className="block">
+          <Link href={`/prestador/${routeId}`} className="block">
             <button className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-lg transition-colors">
               Ver perfil do prestador
             </button>
