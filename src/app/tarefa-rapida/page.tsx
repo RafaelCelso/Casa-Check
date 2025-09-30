@@ -142,7 +142,6 @@ export default function TarefaRapidaPage() {
         description: tarefaTexto.trim(),
         category: listaSelecionada.categoria || "limpeza-geral",
         priority: "media",
-        status: "pendente",
         order_index: nextOrderIndex,
       });
 
