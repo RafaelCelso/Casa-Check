@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { PWAInstallModal } from "@/components/ui/pwa-install-modal";
 
 export default function HomePage() {
   return (
@@ -66,6 +67,9 @@ export default function HomePage() {
           .
         </div>
       </div>
+
+      {/* Modal de instalação PWA */}
+      <PWAInstallModal />
     </div>
   );
 }
