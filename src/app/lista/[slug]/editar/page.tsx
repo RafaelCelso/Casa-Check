@@ -289,15 +289,21 @@ export default function EditarListaPage() {
       const { supabase } = await import("@/lib/supabase");
 
       // Usar o ID completo da lista que já foi carregado
-      const currentLista = await taskListsService.getTaskListById(
-        extractIdFromSlug(String(slug))
-      );
-      if (!currentLista) {
-        setError("Lista não encontrada");
+      const listId = extractIdFromSlug(String(slug));
+
+      if (!listId) {
+        setError("ID da lista inválido");
+        setIsRemoving(false);
         return;
       }
 
-      const listId = currentLista.id;
+      const currentLista = await taskListsService.getTaskListById(listId);
+      if (!currentLista) {
+        setError("Lista não encontrada");
+        setIsRemoving(false);
+        return;
+      }
+
       const colaboradorId = colaboradorToRemove.id;
 
       console.log("Removendo colaborador:", {
