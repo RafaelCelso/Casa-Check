@@ -126,10 +126,10 @@ export default function NovaListaPage() {
     try {
       const novaLista = await taskListsService.createTaskList({
         name: nomeList.trim(),
-        description: descricao.trim() || null,
+        description: descricao.trim() || undefined,
         creator_id: user.id,
         category: categoriaSelecionada,
-        service_provider_id: prestadorId,
+        service_provider_id: prestadorId || undefined,
       });
 
       console.log("Lista criada com sucesso:", novaLista);
