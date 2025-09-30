@@ -290,8 +290,15 @@ export default function EditarListaPage() {
       const { supabase } = await import("@/lib/supabase");
 
       // Usar o ID completo da lista que já foi carregado
+      const extractedId = extractIdFromSlug(String(slug));
+      if (!extractedId) {
+        setError("Lista não encontrada");
+        setIsRemoving(false);
+        return;
+      }
       const currentLista = await taskListsService.getTaskListById(
-        extractIdFromSlug(String(slug))
+        extractedId,
+        user?.id
       );
       if (!currentLista) {
         setError("Lista não encontrada");
