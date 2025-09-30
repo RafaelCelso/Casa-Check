@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,7 +24,7 @@ import { useAuth } from "@/components/auth/supabase-auth-provider";
 import { useModal } from "@/contexts/modal-context";
 import { extractIdFromSlug, generateUniqueSlug } from "@/lib/slug";
 
-export default function NovaTarefaPage() {
+function NovaTarefaContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -309,7 +309,11 @@ export default function NovaTarefaPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className={`${isModalOpen ? "" : "sticky top-0"} z-50 bg-white px-4 py-4 flex items-center shadow-sm`}>
+      <div
+        className={`${
+          isModalOpen ? "" : "sticky top-0"
+        } z-50 bg-white px-4 py-4 flex items-center shadow-sm`}
+      >
         {fromLista ? (
           <Link href="/inicio" className="mr-4">
             <X className="w-6 h-6 text-gray-600" />
@@ -491,5 +495,19 @@ export default function NovaTarefaPage() {
       {/* Padding bottom para compensar o botão fixo e a navegação */}
       <div className="h-40"></div>
     </div>
+  );
+}
+
+export default function NovaTarefaPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-gray-600">
+          Carregando...
+        </div>
+      }
+    >
+      <NovaTarefaContent />
+    </Suspense>
   );
 }
