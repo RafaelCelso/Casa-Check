@@ -19,35 +19,48 @@ import { useRouter } from "next/navigation";
 export default function AjustesPage() {
   const router = useRouter();
   const { isModalOpen } = useModal();
-  const [servicosRecebidos, setServicosRecebidos] = useState([
-    {
-      id: "1",
-      nome: "Limpeza Residencial",
-      prestador: "Mariana Silva",
-      data: "15/01/2025",
-      avaliado: false,
-      avaliacao: null,
-      cor: "green",
-    },
-    {
-      id: "2",
-      nome: "Organização de Quartos",
-      prestador: "João Santos",
-      data: "10/01/2025",
-      avaliado: false,
-      avaliacao: null,
-      cor: "blue",
-    },
-    {
-      id: "3",
-      nome: "Limpeza de Cozinha",
-      prestador: "Ana Costa",
-      data: "08/01/2025",
-      avaliado: true,
-      avaliacao: 4.9,
-      cor: "purple",
-    },
-  ]);
+  interface ServicoRecebido {
+    id: string;
+    nome: string;
+    prestador: string;
+    data: string;
+    avaliado: boolean;
+    avaliacao: number | null;
+    cor: string;
+    prestadorId?: string; // opcional, quando houver ID real do prestador
+  }
+
+  const [servicosRecebidos, setServicosRecebidos] = useState<ServicoRecebido[]>(
+    [
+      {
+        id: "1",
+        nome: "Limpeza Residencial",
+        prestador: "Mariana Silva",
+        data: "15/01/2025",
+        avaliado: false,
+        avaliacao: null,
+        cor: "green",
+      },
+      {
+        id: "2",
+        nome: "Organização de Quartos",
+        prestador: "João Santos",
+        data: "10/01/2025",
+        avaliado: false,
+        avaliacao: null,
+        cor: "blue",
+      },
+      {
+        id: "3",
+        nome: "Limpeza de Cozinha",
+        prestador: "Ana Costa",
+        data: "08/01/2025",
+        avaliado: true,
+        avaliacao: 4.9,
+        cor: "purple",
+      },
+    ]
+  );
 
   // Verificar avaliações salvas no localStorage
   useEffect(() => {
