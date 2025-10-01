@@ -9,6 +9,7 @@ import {
   Send,
   Users,
   Plus,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -391,6 +392,20 @@ function ConvidarPrestadorContent() {
     ));
   };
 
+  const handleCompartilharWhatsApp = () => {
+    const appUrl = "https://casa-check.vercel.app";
+    const message = `Olá! Descobri um app incrível para gerenciar serviços domésticos: Casa Check! 🏠✨
+
+Você pode criar listas de tarefas, acompanhar o progresso e colaborar facilmente. É perfeito para quem trabalha com limpeza e organização!
+
+Baixe o app: ${appUrl}
+
+Que tal conhecer? 😊`;
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -691,11 +706,28 @@ function ConvidarPrestadorContent() {
                           ? "Nenhum prestador cadastrado"
                           : "Nenhum prestador encontrado"}
                       </h3>
-                      <p className="text-sm sm:text-base text-gray-500 font-medium">
+                      <p className="text-sm sm:text-base text-gray-500 font-medium mb-6">
                         {prestadores.length === 0
                           ? "Ainda não há prestadores de serviço disponíveis"
                           : "Tente ajustar os termos da sua busca"}
                       </p>
+
+                      {/* Botão de compartilhar via WhatsApp */}
+                      <div className="space-y-4">
+                        <p className="text-sm text-gray-600 font-medium">
+                          Conhece algum prestador que gostaria de usar o app?
+                        </p>
+                        <button
+                          onClick={handleCompartilharWhatsApp}
+                          className="inline-flex items-center px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          <MessageCircle className="w-5 h-5 mr-2" />
+                          Compartilhar via WhatsApp
+                        </button>
+                        <p className="text-xs text-gray-400">
+                          Convide prestadores para se cadastrarem no app
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
